@@ -5,6 +5,7 @@ import apiRouter from "./modules/index";
 import cors from "cors";
 import { errorHandlerMiddleware } from "./common/middleware/error.middleware";
 import { requestLoggerMiddleware } from "./common/middleware/requestLogger.middleware";
+import cookieParser from "cookie-parser";
 
 const app = express();
 
@@ -15,6 +16,7 @@ app.use(
     credentials: true,
   })
 );
+app.use(cookieParser());
 
 app.use(requestLoggerMiddleware);
 app.use(apiRouter);

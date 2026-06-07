@@ -21,6 +21,7 @@ router.post(
   authController.verifyMagicLink
 );
 
+router.get("/github", authController.githubRedirect);
 router.get("/github/callback", authController.githubCallback);
 
 router.post("/refresh", validateBody(RefreshTokenSchema), authController.refreshToken);
