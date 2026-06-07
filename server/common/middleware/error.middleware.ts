@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { ApiError } from "../utils/error.util";
+import { logger } from "../config/logger.config";
 
 export const errorHandlerMiddleware = (
   err: Error | ApiError,
@@ -9,7 +10,7 @@ export const errorHandlerMiddleware = (
   _next: NextFunction
 ) => {
   if (err instanceof ApiError) {
-    console.error(`[${req.method}] ${req.path} - ${err.message}`);
+    logger.error(`[${req.method}] ${req.path} - ${err.message}`);
 
     return res.status(err.statusCode).json({
       success: false,
@@ -18,7 +19,7 @@ export const errorHandlerMiddleware = (
     });
   }
 
-  console.error(`[${req.method}] ${req.path} - ${err.message}`);
+  logger.error(`[${req.method}] ${req.path} - ${err.message}`);
 
   return res.status(500).json({
     success: false,

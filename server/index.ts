@@ -1,7 +1,9 @@
 import express from "express";
+import { env } from "./common/config/env.config";
+import { logger } from "./common/config/logger.config";
 
 const app = express();
 
-app.listen(8000, () => {
-  console.log("Server is running on port 8000");
+app.listen(env.PORT, () => {
+  logger.debug(`Server is running on port ${env.PORT}`);
 });

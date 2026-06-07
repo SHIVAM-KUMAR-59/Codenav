@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { env } from "../config/env.config";
 import { ApiError } from "../utils/error.util";
+import { logger } from "../config/logger.config";
 
 export interface AuthenticatedRequest extends Request {
   user: {
@@ -29,9 +30,11 @@ export const authenticate = (req: Request, res: Response, next: NextFunction) =>
       email: string;
     };
 
+    logger.debug(`Authenticated user: ${decoded.email} (ID: ${decoded.userId})`);
     (req as AuthenticatedRequest).user = decoded;
     next();
   } catch {
+    logger.error("Invalid token");
     throw new ApiError("Unauthorized", 401, "UNAUTHORIZED");
   }
 };
