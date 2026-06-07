@@ -1,0 +1,102 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id              String    @id @default(cuid())
+  email           String    @unique
+  githubId        String?   @unique
+  githubUsername  String?
+  githubAvatar    String?
+  githubAccessToken String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  magicLinks      MagicLink[]
+  refreshTokens   RefreshToken[]
+}
+
+model MagicLink {
+  id        String    @id @default(cuid())
+  token     String    @unique
+  email     String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user      User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String?
+}
+
+model RefreshToken {
+  id        String    @id @default(cuid())
+  token     String    @unique
+  expiresAt DateTime
+  createdAt DateTime  @default(now())
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+}
+
+model Repository {
+  id              String     @id @default(cuid())
+  url             String     @unique
+  owner           String
+  name            String
+  defaultBranch   String
+  latestCommitSha String?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  analyses        Analysis[]
+
+  @@unique([owner, name])
+}
+
+model Analysis {
+  id          String         @id @default(cuid())
+  commitSha   String
+  status      AnalysisStatus @default(PENDING)
+  progress    Int            @default(0)
+  message     String?
+  error       String?
+  startedAt   DateTime?
+  completedAt DateTime?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  graph           Json?
+  modules         Json?
+  entryPoints     Json?
+  learningPaths   Json?
+  languageStats   Json?
+
+  repository  Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  repositoryId String
+
+  @@unique([repositoryId, commitSha])
+}
+
+enum AnalysisStatus {
+  PENDING
+  FETCHING_METADATA
+  QUEUED
+  CLONING
+  DETECTING_LANGUAGES
+  BUILDING_FOLDER_MAP
+  BUILDING_DEPENDENCY_GRAPH
+  GENERATING_LEARNING_PATHS
+  SAVING_RESULTS
+  COMPLETED
+  FAILED
+}

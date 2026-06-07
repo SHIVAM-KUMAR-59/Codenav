@@ -50,3 +50,7 @@ coverage/
 # Temporary files
 .tmp/
 .cache/
+
+# Prisma
+/server/prisma/generated
+/server/prisma/migrations/migration_lock.toml
