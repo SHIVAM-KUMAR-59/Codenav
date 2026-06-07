@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "tsx watch index.ts",
-    "build": "tsc",
+    "build": "rm -rf dist && prisma generate && tsc",
     "start": "node dist/server.js",
     "test": "echo \"No tests yet\""
   },
