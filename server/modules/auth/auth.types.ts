@@ -31,6 +31,14 @@ export interface AuthTokens {
   refreshToken: string;
 }
 
+export interface User {
+  id: string;
+  email: string;
+  avatar: string | null;
+  joinedAt: Date;
+  updatedAt: Date;
+}
+
 export interface AuthResult {
   tokens: AuthTokens;
   user: {

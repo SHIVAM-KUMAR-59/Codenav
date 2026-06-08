@@ -121,4 +121,27 @@ export class AuthController {
       next(error);
     }
   };
+
+  me: Controller = async (req, res, next) => {
+    try {
+      if (!isAuthenticatedRequest(req)) {
+        res.status(401).json({
+          success: false,
+          message: "Unauthorized",
+        });
+        return;
+      }
+
+      const userId = req.user.userId;
+
+      const result = await this.authService.me(userId);
+      res.status(200).json({
+        success: true,
+        message: "User fetched successfully",
+        data: result,
+      });
+    } catch (err) {
+      next(err);
+    }
+  };
 }

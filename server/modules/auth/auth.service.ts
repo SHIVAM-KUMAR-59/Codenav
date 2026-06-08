@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { env } from "server/common/config/env.config";
-import { AuthResult, AuthTokens, RefreshTokenPayload } from "./auth.types";
+import { AuthResult, AuthTokens, RefreshTokenPayload, User } from "./auth.types";
 import { AuthRepository } from "./auth.repository";
 import { sendEmail } from "../../common/utils/email.util";
 import { ApiError, NotFoundError } from "server/common/utils/error.util";
@@ -209,6 +209,22 @@ export class AuthService {
     }
 
     await this.authRepository.deleteRefreshToken(refreshToken);
+  }
+
+  async me(userId: string): Promise<User | null> {
+    const user = await this.authRepository.findUserById(userId);
+
+    if (!user) {
+      throw new NotFoundError("User", userId);
+    }
+
+    return {
+      id: user.id,
+      email: user.email,
+      avatar: user.githubAvatar,
+      joinedAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
   }
 
   private generateAccessToken(userId: string, email: string): string {

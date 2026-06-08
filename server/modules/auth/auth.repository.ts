@@ -71,4 +71,12 @@ export class AuthRepository {
   async deleteAllRefreshTokensForUser(userId: string): Promise<void> {
     await this.prisma.refreshToken.deleteMany({ where: { userId } });
   }
+
+  async findUserById(userId: string): Promise<User | null> {
+    return await this.prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+  }
 }

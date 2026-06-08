@@ -27,5 +27,6 @@ router.get("/github/callback", authController.githubCallback);
 router.post("/refresh", validateBody(RefreshTokenSchema), authController.refreshToken);
 
 router.post("/logout", authenticate, validateBody(RefreshTokenSchema), authController.logout);
+router.get("/me", authenticate, authController.me);
 
 export default router;
