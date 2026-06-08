@@ -4,7 +4,7 @@ import { AuthService } from "./auth.service";
 import { AuthRepository } from "./auth.repository";
 import { authenticate } from "../../common/middleware/auth.middleware";
 import { validateBody } from "../../common/middleware/validate.middleware";
-import { SendMagicLinkSchema, VerifyMagicLinkSchema, RefreshTokenSchema } from "./auth.types";
+import { SendMagicLinkSchema, VerifyMagicLinkSchema } from "./auth.types";
 import prisma from "../../common/config/prismaClient.config";
 
 const authRepository = new AuthRepository(prisma);
@@ -24,9 +24,9 @@ router.post(
 router.get("/github", authController.githubRedirect);
 router.get("/github/callback", authController.githubCallback);
 
-router.post("/refresh", validateBody(RefreshTokenSchema), authController.refreshToken);
+router.post("/refresh", authController.refreshToken);
 
-router.post("/logout", authenticate, validateBody(RefreshTokenSchema), authController.logout);
+router.post("/logout", authenticate, authController.logout);
 router.get("/me", authenticate, authController.me);
 
 export default router;
