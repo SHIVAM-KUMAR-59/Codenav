@@ -212,7 +212,9 @@ export class AuthService {
   }
 
   private generateAccessToken(userId: string, email: string): string {
-    return jwt.sign({ userId, email }, env.JWT_ACCESS_TOKEN_SECRET, { expiresIn: "15m" });
+    return jwt.sign({ userId, email }, env.JWT_ACCESS_TOKEN_SECRET, {
+      expiresIn: env.NODE_ENV === "development" ? "7d" : "15m",
+    });
   }
 
   private generateRefreshToken(userId: string): string {

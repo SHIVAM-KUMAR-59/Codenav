@@ -1,12 +1,25 @@
 import { Worker } from "bullmq";
 import { env } from "../common/config/env.config";
 import { logger } from "../common/config/logger.config";
+import { ProgressPublisher } from "./progressPublisher.worker";
+import { AnalysisRepository } from "server/modules/analysis/analysis.repository";
+import prisma from "server/common/config/prismaClient.config";
+import { AnalysisStatus } from "server/prisma/generated/prisma";
+
+const analysisRepository = new AnalysisRepository(prisma);
+const progressPublisher = new ProgressPublisher(analysisRepository);
 
 export const analysisWorker = new Worker(
   "analysis",
   async (job) => {
     const { repositoryId, analysisId } = job.data;
     logger.debug(`Processing analysis ${analysisId} for repository ${repositoryId}`);
+
+    await progressPublisher.publish(analysisId, {
+      status: AnalysisStatus.CLONING,
+      progress: 10,
+      message: "Cloning repository...",
+    });
 
     // TODO: processor calls will go here
   },
