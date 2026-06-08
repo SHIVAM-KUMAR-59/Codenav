@@ -4,6 +4,7 @@ import { GithubRepoMetadata } from "./repository.types";
 import { ApiError } from "../../common/utils/error.util";
 import { AnalysisRepository } from "../analysis/analysis.repository";
 import { analysisQueue } from "server/common/config/queue.config";
+import { logger } from "server/common/config/logger.config";
 
 export class RepositoryService {
   constructor(
@@ -84,16 +85,22 @@ export class RepositoryService {
       const existing = await this.repositoryRepository.findWithLatestAnalysis(url);
       const latestAnalysis = existing?.analyses[0];
 
-      if (
-        latestAnalysis &&
-        latestAnalysis.commitSha === metadata.latestCommitSha &&
-        latestAnalysis.status === AnalysisStatus.COMPLETED
-      ) {
-        return {
-          analysisId: latestAnalysis.id,
-          status: AnalysisStatus.COMPLETED,
-          cached: true,
-        };
+      if (latestAnalysis && latestAnalysis.commitSha === metadata.latestCommitSha) {
+        if (latestAnalysis.status === AnalysisStatus.COMPLETED) {
+          return {
+            analysisId: latestAnalysis.id,
+            status: AnalysisStatus.COMPLETED,
+            cached: true,
+          };
+        }
+
+        if (latestAnalysis.status !== AnalysisStatus.FAILED) {
+          return {
+            analysisId: latestAnalysis.id,
+            status: latestAnalysis.status,
+            cached: false,
+          };
+        }
       }
 
       await this.repositoryRepository.update(repository.id, {
@@ -109,18 +116,18 @@ export class RepositoryService {
       });
     }
 
-    const analysis = await this.analysisRepository.create({
-      repository: {
-        connect: { id: repository.id },
-      },
-      commitSha: metadata.latestCommitSha,
-      status: AnalysisStatus.PENDING,
-    });
+    const analysis = await this.analysisRepository.createOrReset(
+      repository.id,
+      metadata.latestCommitSha
+    );
 
     await analysisQueue.add("analyze-repository", {
       repositoryId: repository.id,
       analysisId: analysis.id,
     });
+
+    console.log(`Job queued for analysis ${analysis.id}`);
+    logger.debug(`Job queued for analysis ${analysis.id}`);
 
     return {
       analysisId: analysis.id,

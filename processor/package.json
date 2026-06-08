@@ -1,0 +1,21 @@
+{
+  "name": "@codenav/processor",
+  "version": "1.0.0",
+  "description": "Repository analysis processor for Codenav",
+  "main": "index.ts",
+  "types": "index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dependency-cruiser": "^17.4.3",
+    "fast-glob": "^3.3.3",
+    "simple-git": "^3.36.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.2"
+  }
+}

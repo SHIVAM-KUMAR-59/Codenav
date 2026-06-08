@@ -3,8 +3,23 @@ import { Analysis, AnalysisStatus, Prisma, PrismaClient } from "../../prisma/gen
 export class AnalysisRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
-  async create(data: Prisma.AnalysisCreateInput): Promise<Analysis> {
-    return this.prisma.analysis.create({ data });
+  async createOrReset(repositoryId: string, commitSha: string): Promise<Analysis> {
+    return this.prisma.analysis.upsert({
+      where: { repositoryId_commitSha: { repositoryId, commitSha } },
+      update: {
+        status: AnalysisStatus.PENDING,
+        progress: 0,
+        message: null,
+        error: null,
+        startedAt: null,
+        completedAt: null,
+      },
+      create: {
+        repository: { connect: { id: repositoryId } },
+        commitSha,
+        status: AnalysisStatus.PENDING,
+      },
+    });
   }
 
   async findById(id: string): Promise<Analysis | null> {
