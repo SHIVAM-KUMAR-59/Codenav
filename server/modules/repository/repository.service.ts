@@ -1,0 +1,131 @@
+import { AnalysisStatus } from "../../prisma/generated/prisma";
+import { RepositoryRepository } from "./repository.repository";
+import { GithubRepoMetadata } from "./repository.types";
+import { ApiError } from "../../common/utils/error.util";
+import { AnalysisRepository } from "../analysis/analysis.repository";
+import { analysisQueue } from "server/common/config/queue.config";
+
+export class RepositoryService {
+  constructor(
+    private readonly repositoryRepository: RepositoryRepository,
+    private readonly analysisRepository: AnalysisRepository
+  ) {}
+
+  private parseGithubUrl(url: string): { owner: string; name: string } {
+    const match = url.match(/github\.com\/([^/]+)\/([^/]+)/);
+    if (!match || !match[1] || !match[2]) {
+      throw new ApiError("Invalid GitHub URL", 400, "INVALID_GITHUB_URL");
+    }
+    return {
+      owner: match[1],
+      name: match[2].replace(/\.git$/, ""),
+    };
+  }
+
+  private async fetchGithubMetadata(owner: string, name: string): Promise<GithubRepoMetadata> {
+    const repoResponse = await fetch(`https://api.github.com/repos/${owner}/${name}`, {
+      headers: {
+        Accept: "application/vnd.github.v3+json",
+      },
+    });
+
+    if (!repoResponse.ok) {
+      if (repoResponse.status === 404) {
+        throw new ApiError("Repository not found", 404, "REPOSITORY_NOT_FOUND");
+      }
+      throw new ApiError("Failed to fetch repository metadata", 500, "GITHUB_API_ERROR");
+    }
+
+    const repoData = (await repoResponse.json()) as {
+      name: string;
+      owner: { login: string };
+      default_branch: string;
+      description: string | null;
+      stargazers_count: number;
+      language: string | null;
+    };
+
+    const commitResponse = await fetch(
+      `https://api.github.com/repos/${owner}/${name}/commits/${repoData.default_branch}`,
+      {
+        headers: {
+          Accept: "application/vnd.github.v3+json",
+        },
+      }
+    );
+
+    if (!commitResponse.ok) {
+      throw new ApiError("Failed to fetch latest commit", 500, "GITHUB_API_ERROR");
+    }
+
+    const commitData = (await commitResponse.json()) as { sha: string };
+
+    return {
+      owner,
+      name: repoData.name,
+      defaultBranch: repoData.default_branch,
+      latestCommitSha: commitData.sha,
+      description: repoData.description,
+      stars: repoData.stargazers_count,
+      language: repoData.language,
+    };
+  }
+
+  async analyzeRepository(
+    url: string
+  ): Promise<{ analysisId: string; status: AnalysisStatus; cached: boolean }> {
+    const { owner, name } = this.parseGithubUrl(url);
+
+    const metadata = await this.fetchGithubMetadata(owner, name);
+
+    let repository = await this.repositoryRepository.findByOwnerAndName(owner, name);
+
+    if (repository) {
+      const existing = await this.repositoryRepository.findWithLatestAnalysis(url);
+      const latestAnalysis = existing?.analyses[0];
+
+      if (
+        latestAnalysis &&
+        latestAnalysis.commitSha === metadata.latestCommitSha &&
+        latestAnalysis.status === AnalysisStatus.COMPLETED
+      ) {
+        return {
+          analysisId: latestAnalysis.id,
+          status: AnalysisStatus.COMPLETED,
+          cached: true,
+        };
+      }
+
+      await this.repositoryRepository.update(repository.id, {
+        latestCommitSha: metadata.latestCommitSha,
+      });
+    } else {
+      repository = await this.repositoryRepository.create({
+        url,
+        owner: metadata.owner,
+        name: metadata.name,
+        defaultBranch: metadata.defaultBranch,
+        latestCommitSha: metadata.latestCommitSha,
+      });
+    }
+
+    const analysis = await this.analysisRepository.create({
+      repository: {
+        connect: { id: repository.id },
+      },
+      commitSha: metadata.latestCommitSha,
+      status: AnalysisStatus.PENDING,
+    });
+
+    await analysisQueue.add("analyze-repository", {
+      repositoryId: repository.id,
+      analysisId: analysis.id,
+    });
+
+    return {
+      analysisId: analysis.id,
+      status: AnalysisStatus.PENDING,
+      cached: false,
+    };
+  }
+}

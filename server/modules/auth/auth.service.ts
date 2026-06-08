@@ -51,7 +51,7 @@ export class AuthService {
     }
 
     const tokens = this.generateTokens(user.id, user.email);
-
+    console.log(tokens.accessToken);
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
     await this.authRepository.saveRefreshToken(user.id, tokens.refreshToken, expiresAt);
 

@@ -6,6 +6,8 @@ import cors from "cors";
 import { errorHandlerMiddleware } from "./common/middleware/error.middleware";
 import { requestLoggerMiddleware } from "./common/middleware/requestLogger.middleware";
 import cookieParser from "cookie-parser";
+import "./workers/index";
+import "./common/config/redis.config";
 
 const app = express();
 
