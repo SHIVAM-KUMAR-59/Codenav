@@ -18,7 +18,7 @@ export const authApi = {
 
   me: async (): Promise<AuthUser> => {
     const res = await api.get("/auth/me");
-    return res.data.data.user;
+    return res.data.data;
   },
 
   logout: async (): Promise<void> => {

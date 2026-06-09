@@ -110,7 +110,6 @@ export class AuthController {
 
       const userId = req.user.userId;
       const refreshToken = req.cookies.refreshToken;
-
       await this.authService.logout(userId, refreshToken);
 
       res.status(200).json({
@@ -135,6 +134,7 @@ export class AuthController {
       const userId = req.user.userId;
 
       const result = await this.authService.me(userId);
+
       res.status(200).json({
         success: true,
         message: "User fetched successfully",

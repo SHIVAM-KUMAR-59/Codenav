@@ -29,9 +29,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     async function silentRefresh() {
       try {
         const tokens = await authApi.refresh();
+
         tokenStore.set(tokens.accessToken);
         setAccessToken(tokens.accessToken);
+
+        const authUser = await authApi.me();
+        setUser(authUser);
       } catch {
+        tokenStore.set(null);
         setAccessToken(null);
         setUser(null);
       } finally {

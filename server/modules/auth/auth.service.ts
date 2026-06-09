@@ -42,16 +42,20 @@ export class AuthService {
       throw new ApiError("Magic link expired", 400, "MAGIC_LINK_EXPIRED");
     }
 
-    await this.authRepository.markMagicLinkAsUsed(token);
+    const marked = await this.authRepository.markMagicLinkAsUsed(token);
 
     const user = await this.authRepository.findUserByEmail(magicLink.email);
+
+    if (!marked) {
+      throw new ApiError("Magic link already used or expired", 400, "MAGIC_LINK_INVALID");
+    }
 
     if (!user) {
       throw new NotFoundError("User", magicLink.email);
     }
 
     const tokens = this.generateTokens(user.id, user.email);
-    console.log(tokens.accessToken);
+
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
     await this.authRepository.saveRefreshToken(user.id, tokens.refreshToken, expiresAt);
 
@@ -187,7 +191,7 @@ export class AuthService {
 
     await this.authRepository.deleteRefreshToken(token);
 
-    const user = await this.authRepository.findUserByEmail(decoded.userId);
+    const user = await this.authRepository.findUserById(decoded.userId);
 
     if (!user) {
       throw new NotFoundError("User", decoded.userId);
@@ -234,7 +238,14 @@ export class AuthService {
   }
 
   private generateRefreshToken(userId: string): string {
-    return jwt.sign({ userId }, env.JWT_REFRESH_TOKEN_SECRET, { expiresIn: "7d" });
+    return jwt.sign(
+      {
+        userId,
+        jti: crypto.randomUUID(),
+      },
+      env.JWT_REFRESH_TOKEN_SECRET,
+      { expiresIn: "7d" }
+    );
   }
 
   public generateTokens(userId: string, email: string): AuthTokens {

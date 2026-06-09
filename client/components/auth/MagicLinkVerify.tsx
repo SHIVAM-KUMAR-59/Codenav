@@ -49,7 +49,7 @@ export default function MagicLinkVerifyClient() {
         toast.success("Signed in successfully.");
 
         setTimeout(() => {
-          router.replace("/dashboard");
+          // router.replace("/dashboard");
         }, 1200);
       } catch (error) {
         tokenStore.set(null);

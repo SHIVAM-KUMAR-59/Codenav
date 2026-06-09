@@ -39,11 +39,21 @@ export class AuthRepository {
     return this.prisma.magicLink.findUnique({ where: { token } });
   }
 
-  async markMagicLinkAsUsed(token: string): Promise<void> {
-    await this.prisma.magicLink.update({
-      where: { token },
-      data: { usedAt: new Date() },
+  async markMagicLinkAsUsed(token: string): Promise<boolean> {
+    const result = await this.prisma.magicLink.updateMany({
+      where: {
+        token,
+        usedAt: null,
+        expiresAt: {
+          gt: new Date(),
+        },
+      },
+      data: {
+        usedAt: new Date(),
+      },
     });
+
+    return result.count === 1;
   }
 
   async deleteMagicLink(token: string): Promise<void> {
@@ -51,8 +61,10 @@ export class AuthRepository {
   }
 
   async saveRefreshToken(userId: string, refreshToken: string, expiresAt: Date): Promise<void> {
-    await this.prisma.refreshToken.create({
-      data: {
+    await this.prisma.refreshToken.upsert({
+      where: { token: refreshToken },
+      update: { userId, expiresAt },
+      create: {
         userId,
         token: refreshToken,
         expiresAt,

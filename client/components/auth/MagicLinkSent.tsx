@@ -1,4 +1,5 @@
 import { Mail, ArrowLeft } from "lucide-react";
+import { Button } from "../ui/Button";
 
 type MagicLinkSentProps = {
   email: string;
@@ -7,7 +8,7 @@ type MagicLinkSentProps = {
 
 export const MagicLinkSent = ({ email, onBack }: MagicLinkSentProps) => {
   return (
-    <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl shadow-black/20">
+    <div className="w-full max-w-md rounded-2xl border border-green-950 bg-card p-6 shadow-2xl shadow-black/20">
       <div className="flex flex-col items-center text-center">
         <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl border border-border bg-secondary">
           <Mail className="h-8 w-8 text-primary" />
@@ -22,19 +23,14 @@ export const MagicLinkSent = ({ email, onBack }: MagicLinkSentProps) => {
         <p className="mt-1 break-all text-sm font-medium text-primary">{email}</p>
 
         <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-          Click the link in the email to sign in. The link will expire after a short period for
-          security reasons.
+          Click the link in email to sign in. The link will expire after <b>15 mins</b> for security
+          reasons.
         </p>
 
         <div className="mt-8 flex w-full flex-col gap-3">
-          <button
-            type="button"
-            onClick={onBack}
-            className="flex items-center justify-center gap-2 rounded-xl border border-border bg-secondary px-4 py-3 text-sm font-medium text-secondary-foreground transition-all hover:bg-accent"
-          >
-            <ArrowLeft size={16} />
+          <Button onClick={onBack} variant="secondary" leftIcon={<ArrowLeft size={16} />}>
             Use a different email
-          </button>
+          </Button>
         </div>
 
         <p className="mt-6 text-xs text-muted-foreground">

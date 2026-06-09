@@ -126,7 +126,6 @@ export class RepositoryService {
       analysisId: analysis.id,
     });
 
-    console.log(`Job queued for analysis ${analysis.id}`);
     logger.debug(`Job queued for analysis ${analysis.id}`);
 
     return {

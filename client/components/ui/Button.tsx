@@ -10,6 +10,7 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   leftIcon?: ReactNode;
   rightIcon?: ReactNode;
   variant?: ButtonVariant;
+  onClick?: () => void;
 };
 
 const variantClasses: Record<ButtonVariant, string> = {
