@@ -1,6 +1,6 @@
 # Codenav
 
-> Repository intelligence for contributors. Understand any codebase in minutes.
+### Repository intelligence for contributors. Understand any codebase in minutes.
 
 > **Status:** Active Development &nbsp;|&nbsp; **Stack:** TypeScript · Next.js · Express · BullMQ · PostgreSQL · Redis · OpenRouter
 
