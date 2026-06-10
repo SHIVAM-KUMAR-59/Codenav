@@ -13,10 +13,6 @@ export const GithubCallbackSchema = z.object({
   state: z.string(),
 });
 
-export const RefreshTokenSchema = z.object({
-  refreshToken: z.string(),
-});
-
 export const JwtPayloadSchema = z.object({
   userId: z.string(),
   email: z.string(),
@@ -53,6 +49,5 @@ export interface AuthResult {
 export type SendMagicLinkInput = z.infer<typeof SendMagicLinkSchema>;
 export type VerifyMagicLinkInput = z.infer<typeof VerifyMagicLinkSchema>;
 export type GithubCallbackInput = z.infer<typeof GithubCallbackSchema>;
-export type RefreshTokenInput = z.infer<typeof RefreshTokenSchema>;
 export type JwtPayload = z.infer<typeof JwtPayloadSchema>;
 export type RefreshTokenPayload = z.infer<typeof RefreshTokenPayloadSchema>;
