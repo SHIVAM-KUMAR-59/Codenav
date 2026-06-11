@@ -1,8 +1,9 @@
 import { Request, Response } from "express";
 import { AnalysisRepository } from "./analysis.repository";
 import { logger } from "../../common/config/logger.config";
-import { ApiError } from "../../common/utils/error.util";
 import { Redis } from "ioredis";
+import jwt from "jsonwebtoken";
+import { env } from "../../common/config/env.config";
 
 export class AnalysisSSE {
   constructor(private readonly analysisRepository: AnalysisRepository) {}
@@ -10,10 +11,27 @@ export class AnalysisSSE {
   streamAnalysisStatus = async (req: Request<{ id: string }>, res: Response) => {
     const { id } = req.params;
 
+    const token = req.query.token as string | undefined;
+
+    if (!token) {
+      res.status(401).json({ success: false, message: "Unauthorized", errorCode: "UNAUTHORIZED" });
+      return;
+    }
+
+    try {
+      jwt.verify(token, env.JWT_ACCESS_TOKEN_SECRET);
+    } catch {
+      res.status(401).json({ success: false, message: "Unauthorized", errorCode: "UNAUTHORIZED" });
+      return;
+    }
+
     const analysis = await this.analysisRepository.findById(id);
 
     if (!analysis) {
-      throw new ApiError("Analysis not found", 404, "ANALYSIS_NOT_FOUND");
+      res
+        .status(404)
+        .json({ success: false, message: "Analysis not found", errorCode: "ANALYSIS_NOT_FOUND" });
+      return;
     }
 
     res.setHeader("Content-Type", "text/event-stream");
