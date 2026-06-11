@@ -56,7 +56,7 @@ const RepositoryRow = ({ repo }: RepositoryRowProps) => {
           {status}
         </span>
 
-        <Link href={`/repositories/${repo.id}`}>
+        <Link href={`/repositories/${latestAnalysis?.id}`}>
           <Button variant="outline">Open</Button>
         </Link>
       </div>
