@@ -35,4 +35,16 @@ export class RepositoryRepository {
   async findById(id: string): Promise<Repository | null> {
     return this.prisma.repository.findUnique({ where: { id } });
   }
+
+  async findAllWithLatestAnalysis(): Promise<RepositoryWithLatestAnalysis[]> {
+    return this.prisma.repository.findMany({
+      include: {
+        analyses: {
+          orderBy: { createdAt: "desc" },
+          take: 1,
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+  }
 }

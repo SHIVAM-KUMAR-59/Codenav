@@ -134,4 +134,8 @@ export class RepositoryService {
       cached: false,
     };
   }
+
+  async fetchAll() {
+    return await this.repositoryRepository.findAllWithLatestAnalysis();
+  }
 }
