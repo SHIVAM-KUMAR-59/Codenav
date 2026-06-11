@@ -10,7 +10,7 @@ const DashboardPage = () => {
 
   const repositories = fetchRepositoriesQuery.data ?? [];
   const loading = fetchRepositoriesQuery.isLoading;
-  console.log(repositories);
+
   return (
     <main className="min-h-screen bg-background px-6 py-8 text-foreground">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-8">
