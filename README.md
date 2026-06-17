@@ -230,7 +230,7 @@ pnpm dev:server
 pnpm dev:client
 ```
 
-Server runs at `http://localhost:8000`, client at `http://localhost:3000`.
+Server runs at `http://localhost:8000`, client at `http://localhost:3000/dashboard`.
 
 ---
 

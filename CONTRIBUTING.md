@@ -288,7 +288,7 @@ pnpm dev:client
 Frontend:
 
 ```text
-http://localhost:3000
+http://localhost:3000/dashboard
 ```
 
 Backend:
