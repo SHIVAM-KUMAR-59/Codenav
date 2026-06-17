@@ -1,9 +1,18 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+vi.mock("../../modules/analysis/analysis.ai", () => ({
+  queryWithAI: vi.fn().mockResolvedValue({
+    explanation: "Mock AI response",
+    queryType: "GENERAL",
+    relevantFiles: [],
+  }),
+}));
+
 import { AnalysisService } from "../../modules/analysis/analysis.service";
 import { AnalysisRepository } from "../../modules/analysis/analysis.repository";
-import { mockAnalysisWithRepository } from "../helpers/factories";
-import { NotFoundError, ApiError } from "../../common/utils/error.util";
+import { ApiError, NotFoundError } from "../../common/utils/error.util";
 import { AnalysisStatus } from "../../prisma/generated/prisma/index.js";
+import { mockAnalysisWithRepository } from "../helpers/factories";
 
 const mockAnalysisRepository = {
   findById: vi.fn(),
@@ -25,14 +34,17 @@ describe("AnalysisService", () => {
   describe("findById", () => {
     it("returns analysis if found", async () => {
       const analysis = mockAnalysisWithRepository();
+
       vi.mocked(mockAnalysisRepository.findById).mockResolvedValue(analysis);
 
       const result = await analysisService.findById("analysis-1");
+
       expect(result.id).toBe("analysis-1");
     });
 
     it("throws NotFoundError if not found", async () => {
       vi.mocked(mockAnalysisRepository.findById).mockResolvedValue(null);
+
       await expect(analysisService.findById("nonexistent")).rejects.toThrow(NotFoundError);
     });
   });
@@ -40,6 +52,7 @@ describe("AnalysisService", () => {
   describe("queryAnalysis", () => {
     it("throws if analysis not found", async () => {
       vi.mocked(mockAnalysisRepository.findById).mockResolvedValue(null);
+
       await expect(
         analysisService.queryAnalysis("nonexistent", "how does auth work")
       ).rejects.toThrow(NotFoundError);
@@ -47,8 +60,11 @@ describe("AnalysisService", () => {
 
     it("throws if analysis not completed", async () => {
       vi.mocked(mockAnalysisRepository.findById).mockResolvedValue(
-        mockAnalysisWithRepository({ status: AnalysisStatus.PENDING })
+        mockAnalysisWithRepository({
+          status: AnalysisStatus.PENDING,
+        })
       );
+
       await expect(
         analysisService.queryAnalysis("analysis-1", "how does auth work")
       ).rejects.toThrow(ApiError);
@@ -56,12 +72,15 @@ describe("AnalysisService", () => {
 
     it("returns AI response for completed analysis", async () => {
       vi.mocked(mockAnalysisRepository.findById).mockResolvedValue(
-        mockAnalysisWithRepository({ status: AnalysisStatus.COMPLETED })
+        mockAnalysisWithRepository({
+          status: AnalysisStatus.COMPLETED,
+        })
       );
 
       const result = await analysisService.queryAnalysis("analysis-1", "how does auth work");
-      expect(result.explanation).toBeDefined();
-      expect(result.queryType).toBeDefined();
+
+      expect(result.explanation).toBe("Mock AI response");
+      expect(result.queryType).toBe("GENERAL");
     });
   });
 });
