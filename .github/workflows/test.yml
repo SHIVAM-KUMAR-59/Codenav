@@ -1,0 +1,48 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend-tests:
+    runs-on: ubuntu-latest
+
+    env:
+      NODE_ENV: test
+      PORT: 8000
+      DATABASE_URL: postgresql://test:test@localhost:5432/test
+      JWT_ACCESS_TOKEN_SECRET: test-access-secret
+      JWT_REFRESH_TOKEN_SECRET: test-refresh-secret
+      REDIS_URL: redis://localhost:6379
+      GITHUB_CLIENT_ID: test-github-client-id
+      GITHUB_CLIENT_SECRET: test-github-client-secret
+      GITHUB_CALLBACK_URL: http://localhost:8000/api/v1/auth/github/callback
+      SMTP_FROM_EMAIL: test@example.com
+      SMTP_HOST: smtp.example.com
+      SMTP_PORT: 587
+      SMTP_USERNAME: test-user
+      SMTP_PASSWORD: test-password
+      CLIENT_URL: http://localhost:3000
+      GROQ_API_KEY: test-groq-key
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma Client
+        working-directory: server
+        run: pnpm exec prisma generate
+
+      - name: Run Server Tests
+        run: pnpm --filter server test
