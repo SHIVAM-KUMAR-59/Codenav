@@ -185,6 +185,8 @@ SMTP_PASSWORD=your_smtp_pass
 SMTP_FROM_EMAIL=noreply@codenav.dev
 
 CLIENT_URL=http://localhost:3000
+
+GROQ_API_KEY=your_groq_api_key
 ```
 
 Create `client/.env.local`:
@@ -267,16 +269,18 @@ Errors return:
 
 ### Repositories
 
-| Method | Endpoint                       | Description              |
-| ------ | ------------------------------ | ------------------------ |
-| `POST` | `/api/v1/repositories/analyze` | Submit repo for analysis |
+| Method | Endpoint                       | Description                         |
+| ------ | ------------------------------ | ----------------------------------- |
+| `GET`  | `/api/v1/repositories/`        | Fetch all repositories for the user |
+| `POST` | `/api/v1/repositories/analyze` | Submit repo for analysis            |
 
 ### Analyses
 
-| Method | Endpoint                      | Description                  |
-| ------ | ----------------------------- | ---------------------------- |
-| `GET`  | `/api/v1/analyses/:id/status` | SSE stream for live progress |
-| `GET`  | `/api/v1/analyses/:id`        | Get full analysis result     |
+| Method | Endpoint                      | Description                    |
+| ------ | ----------------------------- | ------------------------------ |
+| `GET`  | `/api/v1/analyses/:id`        | Get full analysis result       |
+| `GET`  | `/api/v1/analyses/:id/status` | SSE stream for live progress   |
+| `POST` | `/api/v1/analyses/:id/query`  | Ask a question for AI analysis |
 
 ---
 
@@ -317,9 +321,9 @@ Same repo + same commit SHA = instant result. No re-analysis. Historical analyse
 - [x] Learning path generation
 - [x] Real-time SSE progress
 - [x] Analysis caching by commit SHA
-- [ ] Repository dashboard
-- [ ] Interactive architecture map (React Flow)
-- [ ] AI-powered natural language queries
+- [x] Repository dashboard
+- [x] Interactive architecture map (React Flow)
+- [x] AI-powered natural language queries
 - [ ] Python, Go, Rust support via tree-sitter
 
 **Future extensions**
