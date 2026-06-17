@@ -5,6 +5,8 @@ import { AnalysisSSE } from "./analysis.sse";
 import { authenticate } from "server/common/middleware/auth.middleware";
 import { AnalysisService } from "./analysis.service";
 import { AnalysisController } from "./analysis.controller";
+import { QueryAnalysisSchema } from "./analysis.types";
+import { validateBody } from "server/common/middleware/validate.middleware";
 
 const router: ExpressRouter = Router();
 const analysisRepository = new AnalysisRepository(prisma);
@@ -14,5 +16,12 @@ const analysisController = new AnalysisController(analysisService);
 
 router.get("/:id/status", analysisSSE.streamAnalysisStatus);
 router.get("/:id", authenticate, analysisController.fetchOne);
+
+router.post(
+  "/:id/query",
+  authenticate,
+  validateBody(QueryAnalysisSchema),
+  analysisController.queryAnalysis
+);
 
 export default router;

@@ -94,3 +94,10 @@ export interface Analysis {
   languageStats: LanguageStat[] | null;
   repository?: Repository;
 }
+
+export interface QueryResponse {
+  explanation: string;
+  files: { path: string; role: string }[];
+  readingOrder: string[];
+  queryType: "flow" | "file" | "impact";
+}

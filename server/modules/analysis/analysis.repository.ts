@@ -1,4 +1,5 @@
 import { Analysis, AnalysisStatus, Prisma, PrismaClient } from "../../prisma/generated/prisma";
+import { AnalysisWithRepository } from "./analysis.types";
 
 export class AnalysisRepository {
   constructor(private readonly prisma: PrismaClient) {}
@@ -22,8 +23,8 @@ export class AnalysisRepository {
     });
   }
 
-  async findById(id: string): Promise<Analysis | null> {
-    return this.prisma.analysis.findUnique({ where: { id } });
+  async findById(id: string): Promise<AnalysisWithRepository | null> {
+    return this.prisma.analysis.findUnique({ where: { id }, include: { repository: true } });
   }
 
   async findByRepositoryAndCommit(

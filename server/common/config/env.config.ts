@@ -20,13 +20,14 @@ const envSchema = z.object({
   SMTP_USERNAME: z.string(),
   SMTP_PASSWORD: z.string(),
   CLIENT_URL: z.string().default("http://localhost:3000"),
+  GROQ_API_KEY: z.string(),
 });
 
 const parsed = envSchema.safeParse(process.env);
 
 if (!parsed.success) {
   logger.error("Invalid environment variables:");
-  logger.error(parsed.error.flatten().fieldErrors);
+  logger.error(JSON.stringify(parsed.error.flatten().fieldErrors, null, 2));
   process.exit(1);
 }
 

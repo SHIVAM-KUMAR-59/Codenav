@@ -3,6 +3,7 @@
 import { useAnalysis } from "client/hooks/use-analysis";
 import {
   AlertCircle,
+  ArrowRight,
   BookOpen,
   Box,
   ChevronDown,
@@ -21,8 +22,9 @@ import Link from "next/link";
 import { use, useState } from "react";
 import ReactFlow, { Background, Controls, MiniMap, type Edge, type Node } from "reactflow";
 import "reactflow/dist/style.css";
+import { QueryResponse } from "client/lib/types";
 
-const TABS = ["Overview", "Modules", "Entry Points", "Learning Paths", "Graph"] as const;
+const TABS = ["Overview", "Modules", "Entry Points", "Learning Paths", "Graph", "Ask AI"] as const;
 type Tab = (typeof TABS)[number];
 
 const ENTRY_POINT_ICONS: Record<string, React.ReactNode> = {
@@ -41,6 +43,20 @@ const LANGUAGE_COLORS: Record<string, string> = {
   Rust: "bg-orange-500",
   default: "bg-muted-foreground",
 };
+
+const QUERY_TYPE_LABELS: Record<string, string> = {
+  flow: "Flow analysis",
+  file: "File analysis",
+  impact: "Impact analysis",
+};
+
+const EXAMPLE_QUESTIONS = [
+  "How does authentication work?",
+  "How does the request lifecycle work?",
+  "What depends on the database layer?",
+  "How does the queue system work?",
+  "What are the main entry points?",
+];
 
 function Skeleton({ className }: { className?: string }) {
   return <div className={`animate-pulse rounded-lg bg-secondary ${className}`} />;
@@ -160,12 +176,12 @@ export default function RepositoryPage({ params }: { params: Promise<{ id: strin
         {!error && (
           <>
             {/* Tabs */}
-            <div className="mb-6 flex gap-1 rounded-xl border border-border bg-card p-1 w-fit">
+            <div className="mb-6 flex gap-1 rounded-xl border border-border bg-card p-1 w-fit overflow-x-auto">
               {TABS.map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`rounded-lg px-4 py-2 text-sm font-medium transition-all ${
+                  className={`rounded-lg px-4 py-2 text-sm font-medium transition-all whitespace-nowrap ${
                     activeTab === tab
                       ? "bg-secondary text-primary"
                       : "text-muted-foreground hover:text-primary"
@@ -182,7 +198,6 @@ export default function RepositoryPage({ params }: { params: Promise<{ id: strin
                 <OverviewSkeleton />
               ) : (
                 <div className="flex flex-col gap-6">
-                  {/* Stats */}
                   <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
                     {[
                       { label: "Total Files", value: analysis?.graph?.nodes?.length ?? 0 },
@@ -200,7 +215,6 @@ export default function RepositoryPage({ params }: { params: Promise<{ id: strin
                     ))}
                   </div>
 
-                  {/* Languages */}
                   <div className="rounded-2xl border border-border bg-card p-5">
                     <h3 className="mb-4 font-semibold">Languages</h3>
                     {!analysis?.languageStats?.length ? (
@@ -227,7 +241,6 @@ export default function RepositoryPage({ params }: { params: Promise<{ id: strin
                     )}
                   </div>
 
-                  {/* Analysis metadata */}
                   <div className="rounded-2xl border border-border bg-card p-5">
                     <h3 className="mb-4 font-semibold">Analysis details</h3>
                     <div className="grid grid-cols-1 gap-3 text-sm md:grid-cols-2">
@@ -395,7 +408,7 @@ export default function RepositoryPage({ params }: { params: Promise<{ id: strin
                         <div className="divide-y divide-border">
                           {path.files.map((step, index) => (
                             <div key={step.path} className="flex items-start gap-4 px-5 py-4">
-                              <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border border-border bg-secondary text-xs font-medium text-muted-foreground">
+                              <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-border bg-secondary text-xs font-medium text-muted-foreground">
                                 {index + 1}
                               </div>
                               <div>
@@ -435,10 +448,159 @@ export default function RepositoryPage({ params }: { params: Promise<{ id: strin
                   <ReactFlowGraph nodes={analysis.graph.nodes} edges={analysis.graph.edges} />
                 </div>
               ))}
+
+            {/* Ask AI Tab */}
+            {activeTab === "Ask AI" && (
+              <div className="flex flex-col gap-6">
+                <div className="rounded-2xl border border-border bg-card p-6">
+                  <h2 className="mb-1 font-semibold">Ask about this codebase</h2>
+                  <p className="mb-6 text-sm text-muted-foreground">
+                    Ask how a feature works, trace a flow, or find what depends on a file.
+                  </p>
+                  <AskAI analysisId={id} />
+                </div>
+
+                <div className="rounded-2xl border border-border bg-card p-5">
+                  <h3 className="mb-3 text-sm font-medium text-muted-foreground">
+                    Example questions
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {EXAMPLE_QUESTIONS.map((q) => (
+                      <button
+                        key={q}
+                        onClick={() => {
+                          const input = document.getElementById("ai-query") as HTMLInputElement;
+                          if (input) {
+                            input.value = q;
+                            input.dispatchEvent(new Event("input", { bubbles: true }));
+                          }
+                        }}
+                        className="rounded-full border border-border bg-secondary px-3 py-1.5 text-xs text-muted-foreground transition-all hover:border-primary/30 hover:text-primary"
+                      >
+                        {q}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
           </>
         )}
       </div>
     </main>
+  );
+}
+
+function AskAI({ analysisId }: { analysisId: string }) {
+  const { queryAnalysisMutation } = useAnalysis(analysisId);
+  const [question, setQuestion] = useState("");
+  const [submitted, setSubmitted] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!question.trim()) return;
+    setSubmitted(question);
+    await queryAnalysisMutation.mutateAsync(question);
+  };
+
+  const result = queryAnalysisMutation.data as QueryResponse | undefined;
+
+  return (
+    <div className="flex flex-col gap-6">
+      <form onSubmit={handleSubmit} className="flex gap-3">
+        <input
+          id="ai-query"
+          type="text"
+          placeholder="How does authentication work?"
+          value={question}
+          onChange={(e) => setQuestion(e.target.value)}
+          className="h-11 flex-1 rounded-xl border border-input bg-background px-3 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground focus:border-ring focus:ring-4 focus:ring-ring/20"
+        />
+        <button
+          type="submit"
+          disabled={queryAnalysisMutation.isPending || !question.trim()}
+          className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-all hover:bg-primary/90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {queryAnalysisMutation.isPending ? (
+            <Loader2 size={16} className="animate-spin" />
+          ) : (
+            <ArrowRight size={16} />
+          )}
+        </button>
+      </form>
+
+      {queryAnalysisMutation.isPending && (
+        <div className="flex flex-col gap-4 rounded-2xl border border-border bg-secondary/40 p-6">
+          <div className="flex items-center gap-3">
+            <Loader2 size={18} className="animate-spin text-muted-foreground" />
+            <p className="text-sm text-muted-foreground">Analyzing codebase...</p>
+          </div>
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-4/5" />
+          <Skeleton className="h-4 w-3/5" />
+        </div>
+      )}
+
+      {queryAnalysisMutation.isError && (
+        <div className="flex items-center gap-2 rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          <AlertCircle size={16} />
+          Failed to get a response. Please try again.
+        </div>
+      )}
+
+      {result && !queryAnalysisMutation.isPending && (
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center gap-2">
+            <span className="rounded-full border border-border bg-secondary px-2.5 py-1 text-xs text-muted-foreground">
+              {QUERY_TYPE_LABELS[result.queryType]}
+            </span>
+            <span className="text-sm text-muted-foreground">{submitted}</span>
+          </div>
+
+          <div className="rounded-2xl border border-border bg-card p-5">
+            <h3 className="mb-3 text-sm font-medium">Explanation</h3>
+            <p className="text-sm leading-relaxed text-muted-foreground">{result.explanation}</p>
+          </div>
+
+          {result.files.length > 0 && (
+            <div className="rounded-2xl border border-border bg-card">
+              <div className="border-b border-border px-5 py-4">
+                <h3 className="text-sm font-medium">Relevant files</h3>
+              </div>
+              <div className="divide-y divide-border">
+                {result.files.map((file) => (
+                  <div key={file.path} className="flex items-start gap-4 px-5 py-4">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border bg-secondary">
+                      <FileCode size={14} className="text-primary" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate font-mono text-sm text-primary">{file.path}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">{file.role}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {result.readingOrder.length > 0 && (
+            <div className="rounded-2xl border border-border bg-card p-5">
+              <h3 className="mb-3 text-sm font-medium">Suggested reading order</h3>
+              <div className="flex flex-col gap-2">
+                {result.readingOrder.map((file, index) => (
+                  <div key={file} className="flex items-center gap-3">
+                    <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-border bg-secondary text-xs text-muted-foreground">
+                      {index + 1}
+                    </div>
+                    <p className="font-mono text-sm text-muted-foreground">{file}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 
