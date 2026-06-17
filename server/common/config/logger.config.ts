@@ -69,6 +69,7 @@ const baseLogger = createLogger({
   levels: customLevels.levels,
 
   level: process.env.NODE_ENV === "production" ? "info" : "debug",
+  silent: process.env.NODE_ENV === "test",
 
   transports: [
     new transports.Console({
