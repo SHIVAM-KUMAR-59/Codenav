@@ -297,6 +297,15 @@ Backend:
 http://localhost:8000
 ```
 
+## Running tests
+
+### Backend
+
+```bash
+cd server
+pnpm test
+```
+
 ---
 
 # Coding Standards
