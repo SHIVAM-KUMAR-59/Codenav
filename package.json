@@ -12,7 +12,10 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier . --write",
     "check-format": "prettier . --check",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "test": "pnpm -r --parallel test",
+    "test:watch": "pnpm -r --parallel test:watch",
+    "test:coverage": "pnpm -r --parallel test:coverage"
   },
   "keywords": [],
   "author": "",
