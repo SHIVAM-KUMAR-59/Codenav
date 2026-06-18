@@ -1,3 +1,5 @@
+![Banner](./banner.png)
+
 # Codenav
 
 ### Repository intelligence for contributors. Understand any codebase in minutes!
