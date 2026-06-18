@@ -6,7 +6,6 @@ import jwt from "jsonwebtoken";
 import { buildApp } from "../helpers/app";
 import { mockAnalysis, mockRepository } from "../helpers/factories";
 import prisma from "../../common/config/prismaClient.config";
-
 vi.mock("../../common/config/prismaClient.config", () => ({
   default: {
     repository: {
@@ -15,6 +14,7 @@ vi.mock("../../common/config/prismaClient.config", () => ({
       create: vi.fn(),
       update: vi.fn(),
     },
+
     analysis: {
       findUnique: vi.fn(),
       findFirst: vi.fn(),
@@ -22,9 +22,12 @@ vi.mock("../../common/config/prismaClient.config", () => ({
       update: vi.fn(),
       upsert: vi.fn(),
     },
+
+    userRepository: {
+      upsert: vi.fn(),
+    },
   },
 }));
-
 vi.mock("../../common/config/queue.config", () => ({
   analysisQueue: {
     add: vi.fn().mockResolvedValue({ id: "job-1" }),
@@ -94,6 +97,7 @@ describe("Repository API", () => {
       vi.mocked(prisma.repository.findUnique).mockResolvedValue(null);
       vi.mocked(prisma.repository.create).mockResolvedValue(mockRepository() as any);
       vi.mocked(prisma.analysis.upsert).mockResolvedValue(mockAnalysis() as any);
+      vi.mocked(prisma.userRepository.upsert).mockResolvedValue({} as any);
 
       const res = await request(app)
         .post("/api/v1/repositories/analyze")
