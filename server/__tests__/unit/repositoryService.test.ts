@@ -22,6 +22,7 @@ const mockRepositoryRepository = {
   create: vi.fn(),
   update: vi.fn(),
   findById: vi.fn(),
+  linkUserToRepository: vi.fn(),
 } as unknown as RepositoryRepository;
 
 const mockAnalysisRepository = {
@@ -46,7 +47,7 @@ describe("RepositoryService", () => {
   describe("analyzeRepository", () => {
     it("throws on invalid GitHub URL", async () => {
       await expect(
-        repositoryService.analyzeRepository("https://gitlab.com/owner/repo")
+        repositoryService.analyzeRepository("https://gitlab.com/owner/repo", "test-user-id")
       ).rejects.toThrow(ApiError);
     });
 
@@ -78,7 +79,8 @@ describe("RepositoryService", () => {
       });
 
       const result = await repositoryService.analyzeRepository(
-        "https://github.com/expressjs/express"
+        "https://github.com/expressjs/express",
+        "test-user-id"
       );
 
       expect(result.cached).toBe(true);
@@ -110,7 +112,8 @@ describe("RepositoryService", () => {
       );
 
       const result = await repositoryService.analyzeRepository(
-        "https://github.com/expressjs/express"
+        "https://github.com/expressjs/express",
+        "test-user-id"
       );
 
       expect(result.cached).toBe(false);
@@ -125,7 +128,7 @@ describe("RepositoryService", () => {
       } as any);
 
       await expect(
-        repositoryService.analyzeRepository("https://github.com/nonexistent/repo")
+        repositoryService.analyzeRepository("https://github.com/nonexistent/repo", "test-user-id")
       ).rejects.toThrow(ApiError);
     });
   });

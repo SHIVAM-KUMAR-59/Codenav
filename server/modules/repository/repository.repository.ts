@@ -9,7 +9,9 @@ export class RepositoryRepository {
   }
 
   async findByOwnerAndName(owner: string, name: string): Promise<Repository | null> {
-    return this.prisma.repository.findUnique({ where: { owner_name: { owner, name } } });
+    return this.prisma.repository.findUnique({
+      where: { owner_name: { owner, name } },
+    });
   }
 
   async findWithLatestAnalysis(url: string): Promise<RepositoryWithLatestAnalysis | null> {
@@ -36,15 +38,40 @@ export class RepositoryRepository {
     return this.prisma.repository.findUnique({ where: { id } });
   }
 
-  async findAllWithLatestAnalysis(): Promise<RepositoryWithLatestAnalysis[]> {
+  async findAllWithLatestAnalysis(userId: string) {
     return this.prisma.repository.findMany({
+      where: {
+        users: {
+          some: {
+            userId,
+          },
+        },
+      },
       include: {
         analyses: {
           orderBy: { createdAt: "desc" },
           take: 1,
         },
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+  }
+
+  async linkUserToRepository(userId: string, repositoryId: string) {
+    return this.prisma.userRepository.upsert({
+      where: {
+        userId_repositoryId: {
+          userId,
+          repositoryId,
+        },
+      },
+      update: {},
+      create: {
+        userId,
+        repositoryId,
+      },
     });
   }
 }

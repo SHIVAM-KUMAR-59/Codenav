@@ -19,6 +19,7 @@ model User {
   githubUsername  String?
   githubAvatar    String?
   githubAccessToken String?
+  repositories    UserRepository[]
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
@@ -43,7 +44,6 @@ model RefreshToken {
   token     String    @unique
   expiresAt DateTime
   createdAt DateTime  @default(now())
-
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
 }
@@ -57,7 +57,7 @@ model Repository {
   latestCommitSha String?
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
-
+  users           UserRepository[]
   analyses        Analysis[]
 
   @@unique([owner, name])
@@ -85,6 +85,15 @@ model Analysis {
   repositoryId String
 
   @@unique([repositoryId, commitSha])
+}
+
+model UserRepository{
+  userId  String
+  repositoryId  String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  repository   Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+  @@id([userId, repositoryId])
 }
 
 enum AnalysisStatus {

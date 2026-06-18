@@ -14,6 +14,6 @@ const repositoryController = new RepositoryController(repositoryService);
 const router: ExpressRouter = Router();
 
 router.post("/analyze", authenticate, repositoryController.analyzeRepository);
-router.get("/", repositoryController.fetchAll);
+router.get("/", authenticate, repositoryController.fetchAll);
 
 export default router;

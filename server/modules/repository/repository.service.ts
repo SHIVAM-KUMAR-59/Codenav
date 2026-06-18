@@ -73,15 +73,16 @@ export class RepositoryService {
   }
 
   async analyzeRepository(
-    url: string
+    url: string,
+    userId: string
   ): Promise<{ analysisId: string; status: AnalysisStatus; cached: boolean }> {
     const { owner, name } = this.parseGithubUrl(url);
-
     const metadata = await this.fetchGithubMetadata(owner, name);
-
     let repository = await this.repositoryRepository.findByOwnerAndName(owner, name);
 
     if (repository) {
+      const id = repository.id;
+      await this.repositoryRepository.linkUserToRepository(userId, id);
       const existing = await this.repositoryRepository.findWithLatestAnalysis(url);
       const latestAnalysis = existing?.analyses[0];
 
@@ -114,6 +115,8 @@ export class RepositoryService {
         defaultBranch: metadata.defaultBranch,
         latestCommitSha: metadata.latestCommitSha,
       });
+      const id = repository.id;
+      await this.repositoryRepository.linkUserToRepository(userId, id);
     }
 
     const analysis = await this.analysisRepository.createOrReset(
@@ -135,7 +138,7 @@ export class RepositoryService {
     };
   }
 
-  async fetchAll() {
-    return await this.repositoryRepository.findAllWithLatestAnalysis();
+  async fetchAll(id: string) {
+    return await this.repositoryRepository.findAllWithLatestAnalysis(id);
   }
 }
