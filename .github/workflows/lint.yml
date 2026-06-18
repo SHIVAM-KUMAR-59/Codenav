@@ -1,17 +1,34 @@
 name: Lint
 
 on:
+  pull_request_target:
+    branches: [main]
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
+
+concurrency:
+  group: lint-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
 
 jobs:
   lint:
     runs-on: ubuntu-latest
 
+    outputs:
+      format: ${{ steps.format.outcome }}
+      lint: ${{ steps.lint.outcome }}
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - uses: pnpm/action-setup@v4
 
@@ -22,6 +39,95 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - run: pnpm check-format
+      - name: Check formatting
+        id: format
+        continue-on-error: true
+        run: pnpm check-format
 
-      - run: pnpm lint
+      - name: Run lint
+        id: lint
+        continue-on-error: true
+        run: pnpm lint
+
+      - name: Fail if checks failed
+        if: steps.format.outcome == 'failure' || steps.lint.outcome == 'failure'
+        run: exit 1
+
+  pr-comment:
+    needs: [lint]
+    if: always() && github.event_name == 'pull_request_target'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Create or update PR comment
+        uses: actions/github-script@v7
+        env:
+          FORMAT: ${{ needs.lint.outputs.format }}
+          LINT: ${{ needs.lint.outputs.lint }}
+        with:
+          script: |
+            const marker = '<!-- lint-bot -->';
+            const prNumber = context.payload.pull_request.number;
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+            });
+
+            const existing = comments.find(c => c.body?.includes(marker));
+
+            const formatFailed = process.env.FORMAT === 'failure';
+            const lintFailed = process.env.LINT === 'failure';
+
+            if (!formatFailed && !lintFailed) {
+              if (existing) {
+                await github.rest.issues.deleteComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: existing.id,
+                });
+              }
+              return;
+            }
+
+            const sections = [];
+
+            if (formatFailed) {
+              sections.push(
+                '### Format Check Failed\n\n' +
+                '```bash\n' +
+                'pnpm check-format\n' +
+                '```'
+              );
+            }
+
+            if (lintFailed) {
+              sections.push(
+                '### Lint Check Failed\n\n' +
+                '```bash\n' +
+                'pnpm lint\n' +
+                '```'
+              );
+            }
+
+            const body =
+              `${marker}\n## Lint Review\n\n` +
+              sections.join('\n\n') +
+              '\n\n---\n*This comment updates automatically on every push.*';
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body,
+              });
+            }
