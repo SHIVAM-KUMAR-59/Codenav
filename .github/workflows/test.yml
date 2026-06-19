@@ -29,11 +29,11 @@ jobs:
       GROQ_API_KEY: test-groq-key
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v3
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v3
         with:
           node-version: 22
           cache: pnpm
@@ -51,11 +51,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v3
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v3
         with:
           node-version: 22
           cache: pnpm
@@ -64,3 +64,21 @@ jobs:
 
       - name: Run Processor Tests
         run: pnpm --filter @codenav/processor test
+
+  frontend-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: pnpm/action-setup@v3
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Run Frontend tests
+        run: pnpm --filter client test
