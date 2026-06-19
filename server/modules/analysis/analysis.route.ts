@@ -2,11 +2,11 @@ import { Router, type Router as ExpressRouter } from "express";
 import { AnalysisRepository } from "./analysis.repository";
 import prisma from "../../common/config/prismaClient.config";
 import { AnalysisSSE } from "./analysis.sse";
-import { authenticate } from "server/common/middleware/auth.middleware";
+import { authenticate } from "../../common/middleware/auth.middleware";
 import { AnalysisService } from "./analysis.service";
 import { AnalysisController } from "./analysis.controller";
 import { QueryAnalysisSchema } from "./analysis.types";
-import { validateBody } from "server/common/middleware/validate.middleware";
+import { validateBody } from "../../common/middleware/validate.middleware";
 
 const router: ExpressRouter = Router();
 const analysisRepository = new AnalysisRepository(prisma);

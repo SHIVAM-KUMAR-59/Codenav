@@ -20,7 +20,7 @@ export const errorHandlerMiddleware = (
   }
 
   logger.error(`[${req.method}] ${req.path} - ${err.message}`);
-
+  console.error(err);
   return res.status(500).json({
     success: false,
     message: "Internal Server Error",

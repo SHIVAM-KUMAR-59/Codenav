@@ -4,7 +4,7 @@ import { RepositoryRepository } from "./repository.repository";
 import { RepositoryService } from "./repository.service";
 import { AnalysisRepository } from "../analysis/analysis.repository";
 import { RepositoryController } from "./repository.controller";
-import { authenticate } from "server/common/middleware/auth.middleware";
+import { authenticate } from "../../common/middleware/auth.middleware";
 
 const repositoryRepository = new RepositoryRepository(prisma);
 const analysisRepository = new AnalysisRepository(prisma);

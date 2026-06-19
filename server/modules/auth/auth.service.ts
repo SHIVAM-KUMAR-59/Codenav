@@ -1,10 +1,10 @@
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
-import { env } from "server/common/config/env.config";
+import { env } from "../../common/config/env.config";
 import { AuthResult, AuthTokens, RefreshTokenPayload, User } from "./auth.types";
 import { AuthRepository } from "./auth.repository";
 import { sendEmail } from "../../common/utils/email.util";
-import { ApiError, NotFoundError } from "server/common/utils/error.util";
+import { ApiError, NotFoundError } from "../../common/utils/error.util";
 
 export class AuthService {
   constructor(private readonly authRepository: AuthRepository) {}

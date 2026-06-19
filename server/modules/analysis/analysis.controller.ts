@@ -1,4 +1,4 @@
-import { BodyParamsController, ParamsController } from "server/common/utils/types.util";
+import { BodyParamsController, ParamsController } from "../../common/utils/types.util";
 import { AnalysisService } from "./analysis.service";
 
 export class AnalysisController {
