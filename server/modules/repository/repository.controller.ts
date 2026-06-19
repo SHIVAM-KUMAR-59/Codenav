@@ -1,4 +1,4 @@
-import { BodyController, Controller, isAuthenticatedRequest } from "server/common/utils/types.util";
+import { BodyController, Controller, isAuthenticatedRequest } from "../../common/utils/types.util";
 import { RepositoryService } from "./repository.service";
 import { AnalyzeRepositoryInput } from "./repository.types";
 

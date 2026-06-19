@@ -1,4 +1,4 @@
-import { Analysis, Repository } from "server/prisma/generated/prisma";
+import { Analysis, Repository } from "../../prisma/generated/prisma";
 import { z } from "zod";
 
 export const QueryAnalysisSchema = z.object({

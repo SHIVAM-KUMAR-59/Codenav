@@ -3,8 +3,8 @@ import { RepositoryRepository } from "./repository.repository";
 import { GithubRepoMetadata } from "./repository.types";
 import { ApiError } from "../../common/utils/error.util";
 import { AnalysisRepository } from "../analysis/analysis.repository";
-import { analysisQueue } from "server/common/config/queue.config";
-import { logger } from "server/common/config/logger.config";
+import { analysisQueue } from "../../common/config/queue.config";
+import { logger } from "../../common/config/logger.config";
 
 export class RepositoryService {
   constructor(

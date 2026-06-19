@@ -2,11 +2,11 @@ import { Worker } from "bullmq";
 import { env } from "../common/config/env.config";
 import { logger } from "../common/config/logger.config";
 import { ProgressPublisher } from "./progressPublisher.worker";
-import { AnalysisRepository } from "server/modules/analysis/analysis.repository";
-import prisma from "server/common/config/prismaClient.config";
-import { AnalysisStatus, Prisma } from "server/prisma/generated/prisma";
+import { AnalysisRepository } from "../modules/analysis/analysis.repository";
+import prisma from "../common/config/prismaClient.config";
+import { AnalysisStatus, Prisma } from "../prisma/generated/prisma";
 import { analyzeRepository } from "@codenav/processor";
-import { RepositoryRepository } from "server/modules/repository/repository.repository";
+import { RepositoryRepository } from "../modules/repository/repository.repository";
 
 const analysisRepository = new AnalysisRepository(prisma);
 const progressPublisher = new ProgressPublisher(analysisRepository);

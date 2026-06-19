@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient, User } from "server/prisma/generated/prisma";
+import { Prisma, PrismaClient, User } from "../../prisma/generated/prisma";
 
 export class AuthRepository {
   constructor(private readonly prisma: PrismaClient) {}

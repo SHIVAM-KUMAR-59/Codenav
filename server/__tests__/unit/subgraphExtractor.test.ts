@@ -1,4 +1,4 @@
-import { extractSubgraph, GraphEdge, GraphNode } from "server/modules/analysis/analysis.utils.";
+import { extractSubgraph, GraphEdge, GraphNode } from "../../modules/analysis/analysis.utils.";
 import { describe, it, expect } from "vitest";
 
 const mockNodes: GraphNode[] = [

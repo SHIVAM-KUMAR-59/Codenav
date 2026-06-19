@@ -1,4 +1,4 @@
-import { ApiError, NotFoundError } from "server/common/utils/error.util";
+import { ApiError, NotFoundError } from "../../common/utils/error.util";
 import { AnalysisRepository } from "./analysis.repository";
 import {
   assembleContext,

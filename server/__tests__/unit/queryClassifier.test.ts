@@ -1,4 +1,4 @@
-import { classifyQuery } from "server/modules/analysis/analysis.utils.";
+import { classifyQuery } from "../../modules/analysis/analysis.utils.";
 import { describe, it, expect } from "vitest";
 
 describe("classifyQuery", () => {

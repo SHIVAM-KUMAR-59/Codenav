@@ -6,7 +6,7 @@ import {
   QueryController,
 } from "../../common/utils/types.util";
 import { SendMagicLinkInput, VerifyMagicLinkInput } from "./auth.types";
-import { env } from "server/common/config/env.config";
+import { env } from "../../common/config/env.config";
 
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
