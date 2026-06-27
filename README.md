@@ -4,7 +4,7 @@
 
 ### Repository intelligence for contributors. Understand any codebase in minutes!
 
-> **Status:** Active Development &nbsp;|&nbsp; **Stack:** TypeScript · Next.js · Express · BullMQ · PostgreSQL · Redis · OpenRouter
+> **Status:** Active Development &nbsp;|&nbsp; **Stack:** TypeScript · Next.js · Express · BullMQ · PostgreSQL · Redis · Groq
 
 ---
 
@@ -100,7 +100,7 @@ The processor is a pure library — no database, no Redis, no framework coupling
 | Analysis            | dependency-cruiser + fast-glob  | Deterministic dependency graph generation        |
 | Real-time           | Server-Sent Events              | Live analysis progress                           |
 | Auth                | JWT + Magic Link + GitHub OAuth | Passwordless, refresh tokens in httpOnly cookies |
-| AI                  | OpenRouter (Qwen / DeepSeek)    | Summaries and natural language explanations      |
+| AI                  | GroQ Llama-3.3| Summaries and natural language explanations      |
 
 ---
 
